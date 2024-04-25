@@ -48,6 +48,7 @@ name = "char22nm-preprocess"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "itertools 0.12.1",
  "liberty-db",
  "serde",
  "serde_yaml",
@@ -224,6 +225,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -244,15 +254,13 @@ checksum = "9c198f91728a82281a64e1f4f9eeb25d82cb32a5de251c6bd1b5154d63a8e7bd"
 [[package]]
 name = "liberty-db"
 version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9bc9179da4a8fa0d4c5a4ee195d5fdb106bc5dfb3f758f26e68282ef98ed23a3"
 dependencies = [
  "biodivine-lib-bdd",
  "derivative",
  "duplicate",
  "enum_dispatch",
  "float-cmp",
- "itertools",
+ "itertools 0.10.5",
  "itoa",
  "lazy_static",
  "liberty-macros",
@@ -270,9 +278,7 @@ dependencies = [
 
 [[package]]
 name = "liberty-macros"
-version = "0.4.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bad6586b3ce1880d2ffc71c74a86533330aca15b0d679566e8d5cd384552888c"
+version = "0.4.6"
 dependencies = [
  "proc-macro2",
  "quote",
