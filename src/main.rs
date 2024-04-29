@@ -1,7 +1,8 @@
+mod arcs;
 use liberty_db::{cell::Cell, GroupSet};
 use serde::{Deserialize, Serialize};
 use std::{
-  collections::{HashMap, HashSet},
+  collections::{BinaryHeap, HashMap, HashSet},
   fs::{self, File},
   io::{BufWriter, Write},
   path::Path,
@@ -305,6 +306,8 @@ fn pruned_lib() -> anyhow::Result<()> {
     let lib_path = "pruned.lib";
     let mut writer = BufWriter::new(File::create(lib_path)?);
     write!(&mut writer, "{}", library)?;
+    let data: BinaryHeap<_> = library.cell.iter().collect();
+    // let data: BinaryHeap<_> = a_lot_of_numbers.collect()
   }
   Ok(())
 }
@@ -379,6 +382,96 @@ fn valid_cells() -> anyhow::Result<()> {
         println!("{},", cell.name);
       }
     }
+  }
+  Ok(())
+}
+
+#[test]
+fn replace_timing_golden() -> anyhow::Result<()> {
+  let template_file = "lvf.lib";
+  let data1_file = "/code/char0425/golden1/out/btdcell.lib";
+  let data2_file = "/code/char0425/golden2/out/btdcell.lib";
+  match (
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
+      template_file,
+    ))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+  ) {
+    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
+      data1_lib.cell.insert(
+        template_lib
+          .cell
+          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
+          .expect("msg")
+          .clone(),
+      );
+      data1_lib.cell.extend(data2_lib.cell.into_iter());
+      for template_cell in template_lib.cell.iter_mut() {
+        let id = template_cell.id();
+        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
+        for template_pin in template_cell.pin.iter_mut() {
+          let id = template_pin.id();
+          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
+          template_pin.timing = data_pin.timing.clone();
+        }
+      }
+      let lib_path = "pruned_golden.lib";
+      let mut writer = BufWriter::new(File::create(lib_path)?);
+      write!(&mut writer, "{}", template_lib)?;
+    }
+    (Ok(_), Ok(_), Err(_)) => todo!(),
+    (Ok(_), Err(_), Ok(_)) => todo!(),
+    (Ok(_), Err(_), Err(_)) => todo!(),
+    (Err(_), Ok(_), Ok(_)) => todo!(),
+    (Err(_), Ok(_), Err(_)) => todo!(),
+    (Err(_), Err(_), Ok(_)) => todo!(),
+    (Err(_), Err(_), Err(_)) => todo!(),
+  }
+  Ok(())
+}
+
+#[test]
+fn replace_timing_baseline() -> anyhow::Result<()> {
+  let template_file = "lvf.lib";
+  let data1_file = "/code/char0425/baseline1/out/btdcell.lib";
+  let data2_file = "/code/char0425/baseline2/out/btdcell.lib";
+  match (
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
+      template_file,
+    ))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+  ) {
+    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
+      data1_lib.cell.insert(
+        template_lib
+          .cell
+          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
+          .expect("msg")
+          .clone(),
+      );
+      data1_lib.cell.extend(data2_lib.cell.into_iter());
+      for template_cell in template_lib.cell.iter_mut() {
+        let id = template_cell.id();
+        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
+        for template_pin in template_cell.pin.iter_mut() {
+          let id = template_pin.id();
+          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
+          template_pin.timing = data_pin.timing.clone();
+        }
+      }
+      let lib_path = "pruned_baseline.lib";
+      let mut writer = BufWriter::new(File::create(lib_path)?);
+      write!(&mut writer, "{}", template_lib)?;
+    }
+    (Ok(_), Ok(_), Err(_)) => todo!(),
+    (Ok(_), Err(_), Ok(_)) => todo!(),
+    (Ok(_), Err(_), Err(_)) => todo!(),
+    (Err(_), Ok(_), Ok(_)) => todo!(),
+    (Err(_), Ok(_), Err(_)) => todo!(),
+    (Err(_), Err(_), Ok(_)) => todo!(),
+    (Err(_), Err(_), Err(_)) => todo!(),
   }
   Ok(())
 }
@@ -490,6 +583,51 @@ fn lvf_lib() -> anyhow::Result<()> {
   Ok(())
 }
 
+#[test]
+fn collect() -> anyhow::Result<()> {
+  let template_file = "lvf.lib";
+  let data1_file = "/code/char0425/baseline1/out/btdcell.lib";
+  let data2_file = "/code/char0425/baseline2/out/btdcell.lib";
+  match (
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
+      template_file,
+    ))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
+    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+  ) {
+    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
+      data1_lib.cell.insert(
+        template_lib
+          .cell
+          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
+          .expect("msg")
+          .clone(),
+      );
+      data1_lib.cell.extend(data2_lib.cell.into_iter());
+      for template_cell in template_lib.cell.iter_mut() {
+        let id = template_cell.id();
+        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
+        for template_pin in template_cell.pin.iter_mut() {
+          let id = template_pin.id();
+          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
+          template_pin.timing = data_pin.timing.clone();
+        }
+      }
+      let lib_path = "pruned_baseline.lib";
+      let mut writer = BufWriter::new(File::create(lib_path)?);
+      write!(&mut writer, "{}", template_lib)?;
+    }
+    (Ok(_), Ok(_), Err(_)) => todo!(),
+    (Ok(_), Err(_), Ok(_)) => todo!(),
+    (Ok(_), Err(_), Err(_)) => todo!(),
+    (Err(_), Ok(_), Ok(_)) => todo!(),
+    (Err(_), Ok(_), Err(_)) => todo!(),
+    (Err(_), Err(_), Ok(_)) => todo!(),
+    (Err(_), Err(_), Err(_)) => todo!(),
+  }
+  Ok(())
+}
+
 fn main() -> anyhow::Result<()> {
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
   let netlist_path =  "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Back_End/spice/tcbn22ullbwp30p140_110a/tcbn22ullbwp30p140_110a.spi";
@@ -515,7 +653,8 @@ fn main() -> anyhow::Result<()> {
         Some(liberty_db::expression::BooleanExpression::from_str(when_str)?.into())
       };
       for cell_name in cell_names {
-        let mut cell = library.cell.take(&Cell::id(cell_name.to_string())).expect("msg");
+        let mut cell =
+          library.cell.take(&Cell::new_id(cell_name.to_string())).expect("msg");
         cell.leakage_power.clear();
         for pin in cell.pin.iter_mut() {
           pin.internal_power.clear();

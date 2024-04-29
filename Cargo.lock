@@ -17,8 +17,6 @@ checksum = "f1fdabc7756949593fe60f30ec81974b613357de856987752631dea1e3394c80"
 [[package]]
 name = "biodivine-lib-bdd"
 version = "0.5.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139bf3016e5cf47762c61f88ad4119e32979560612ee4a3ea77ac204f3db5769"
 dependencies = [
  "fxhash",
  "num-bigint",
@@ -319,14 +317,10 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 [[package]]
 name = "mut_set"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f3e4d4469f4313769f43368d5fce0d32cba2dc36512ce204c0523795648b44e"
 
 [[package]]
 name = "mut_set_derive"
 version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d6f8291ddafa097221fd8c258d0828c2f5d6e632060dd0448260f0caec6a401"
 dependencies = [
  "proc-macro2",
  "quote",
