@@ -1,5 +1,8 @@
 mod arcs;
-use liberty_db::{cell::Cell, GroupSet};
+use liberty_db::{
+  cell::{self, Cell},
+  ArcStr, GroupSet,
+};
 use serde::{Deserialize, Serialize};
 use std::{
   collections::{BinaryHeap, HashMap, HashSet},
@@ -29,26 +32,26 @@ impl Config {
   }
 }
 
-const PVT: [(&str, &str, f32, f32); 16] = [
-  ("ffg0p88v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 0.0),
-  ("ffg0p88v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 125.0),
-  ("ffg0p88vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, -40.0),
-  ("ffg0p99v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 0.0),
-  ("ffg0p99v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 125.0),
-  ("ffg0p99vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, -40.0),
-  ("ssg0p72v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 0.0),
-  ("ssg0p72v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 125.0),
-  ("ssg0p72vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, -40.0),
-  ("ssg0p81v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 0.0),
-  ("ssg0p81v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 125.0),
-  ("ssg0p81vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, -40.0),
+const PVT: [(&str, &str, f32, f32); 1] = [
+  // ("ffg0p88v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 0.0),
+  // ("ffg0p88v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 125.0),
+  // ("ffg0p88vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, -40.0),
+  // ("ffg0p99v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 0.0),
+  // ("ffg0p99v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 125.0),
+  // ("ffg0p99vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, -40.0),
+  // ("ssg0p72v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 0.0),
+  // ("ssg0p72v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 125.0),
+  // ("ssg0p72vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, -40.0),
+  // ("ssg0p81v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 0.0),
+  // ("ssg0p81v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 125.0),
+  // ("ssg0p81vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, -40.0),
   ("tt0p8v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 25.0),
-  ("tt0p8v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 85.0),
-  ("tt0p9v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 25.0),
-  ("tt0p9v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 85.0),
+  // ("tt0p8v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 85.0),
+  // ("tt0p9v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 25.0),
+  // ("tt0p9v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 85.0),
 ];
 
-const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 12] = [
+const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 11] = [
   (
     "INV",
     ("ZN", "I", "", true),
@@ -68,23 +71,23 @@ const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 12] = [
       "INVD8BWP30P140",
     ],
   ),
-  (
-    "BUFF",
-    ("Z", "I", "", true),
-    &[
-      "BUFFD0BWP30P140",
-      "BUFFD0P7BWP30P140",
-      "BUFFD12BWP30P140",
-      "BUFFD16BWP30P140",
-      "BUFFD1BWP30P140",
-      "BUFFD20BWP30P140",
-      "BUFFD24BWP30P140",
-      "BUFFD2BWP30P140",
-      "BUFFD4BWP30P140",
-      "BUFFD6BWP30P140",
-      "BUFFD8BWP30P140",
-    ],
-  ),
+  // (
+  //   "BUFF",
+  //   ("Z", "I", "", true),
+  //   &[
+  //     "BUFFD0BWP30P140",
+  //     "BUFFD0P7BWP30P140",
+  //     "BUFFD12BWP30P140",
+  //     "BUFFD16BWP30P140",
+  //     "BUFFD1BWP30P140",
+  //     "BUFFD20BWP30P140",
+  //     "BUFFD24BWP30P140",
+  //     "BUFFD2BWP30P140",
+  //     "BUFFD4BWP30P140",
+  //     "BUFFD6BWP30P140",
+  //     "BUFFD8BWP30P140",
+  //   ],
+  // ),
   (
     "ND2",
     ("ZN", "A1", "", true),
@@ -187,8 +190,8 @@ const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 12] = [
   ),
 ];
 
-const RUN: [(&str, usize, &str); 2] =
-  [("golden", 50001, "QmcSample"), ("baseline", 10001, "McSample")];
+const RUN: [(&str, usize, &str); 1] = [("100kMC", 100000, "McSample")];
+// [("golden", 50001, "QmcSample"), ("baseline", 10001, "McSample")];
 
 #[test]
 fn check() -> anyhow::Result<()> {
@@ -198,10 +201,10 @@ fn check() -> anyhow::Result<()> {
   let model_path = "/data/junzhuo/tech/tsmc/22nm/iPDK_CRN22ULL_shrink_T-N22-CR-SP-004-W1_v1.3_1p1a_20211230_all/models/hspice/25/cln22ull_2d5_elk_v1d3_1p1_shrink0d855_embedded_usage.l";
   let hspice_path = "/toolset/eda/synopsys/hspice/2021.09/bin/hspice";
   let btdcell_path = "/data/junzhuo/HOME/SHARE/junzhuo/btdcell/bin/btdcell";
-  let temp_dir = fs::canonicalize(&Path::new("../template"))?;
-  let conf2_dir = fs::canonicalize(&Path::new("../config2"))?;
-  let cli2_dir = fs::canonicalize(&Path::new("../cli2"))?;
-  let run2_dir = fs::canonicalize(&Path::new("../run2"))?;
+  let temp_dir = fs::canonicalize(&Path::new("../template3"))?;
+  let conf2_dir = fs::canonicalize(&Path::new("../config3"))?;
+  let cli2_dir = fs::canonicalize(&Path::new("../cli3"))?;
+  let run2_dir = fs::canonicalize(&Path::new("../run3"))?;
   let mut config_map: HashMap<(&'static str, &'static str, &'static str), Config> =
     HashMap::new();
   for (cell_group, _, cell_names) in CELL_GROUP {
@@ -282,7 +285,7 @@ fn check() -> anyhow::Result<()> {
 }
 #[test]
 fn pruned_lib() -> anyhow::Result<()> {
-  let cell_list: std::collections::HashSet<String> = vec![
+  let cell_list: HashSet<ArcStr> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -296,7 +299,7 @@ fn pruned_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ToString::to_string)
+  .map(ArcStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
   if let Ok(mut library) =
@@ -314,7 +317,7 @@ fn pruned_lib() -> anyhow::Result<()> {
 
 #[test]
 fn pruned_lvf_lib() -> anyhow::Result<()> {
-  let cell_list: std::collections::HashSet<String> = vec![
+  let cell_list: HashSet<ArcStr> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -328,7 +331,7 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ToString::to_string)
+  .map(ArcStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/LVF/CCS/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c_hm_lvf_p_ccs.lib";
   if let Ok(mut library) =
@@ -344,7 +347,7 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
 
 #[test]
 fn valid_cells() -> anyhow::Result<()> {
-  let cell_list: std::collections::HashSet<String> = vec![
+  let cell_list: HashSet<ArcStr> = vec![
     "HA1D0BWP30P140",
     "HA1D1BWP30P140",
     "AOI21D0BWP30P140",
@@ -371,7 +374,7 @@ fn valid_cells() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ToString::to_string)
+  .map(ArcStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
   if let Ok(library) =
@@ -387,53 +390,8 @@ fn valid_cells() -> anyhow::Result<()> {
 }
 
 #[test]
-fn replace_timing_golden() -> anyhow::Result<()> {
-  let template_file = "lvf.lib";
-  let data1_file = "/code/char0425/golden1/out/btdcell.lib";
-  let data2_file = "/code/char0425/golden2/out/btdcell.lib";
-  match (
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
-  ) {
-    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
-      data1_lib.cell.insert(
-        template_lib
-          .cell
-          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
-          .expect("msg")
-          .clone(),
-      );
-      data1_lib.cell.extend(data2_lib.cell.into_iter());
-      for template_cell in template_lib.cell.iter_mut() {
-        let id = template_cell.id();
-        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
-        for template_pin in template_cell.pin.iter_mut() {
-          let id = template_pin.id();
-          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
-          template_pin.timing = data_pin.timing.clone();
-        }
-      }
-      let lib_path = "pruned_golden.lib";
-      let mut writer = BufWriter::new(File::create(lib_path)?);
-      write!(&mut writer, "{}", template_lib)?;
-    }
-    (Ok(_), Ok(_), Err(_)) => todo!(),
-    (Ok(_), Err(_), Ok(_)) => todo!(),
-    (Ok(_), Err(_), Err(_)) => todo!(),
-    (Err(_), Ok(_), Ok(_)) => todo!(),
-    (Err(_), Ok(_), Err(_)) => todo!(),
-    (Err(_), Err(_), Ok(_)) => todo!(),
-    (Err(_), Err(_), Err(_)) => todo!(),
-  }
-  Ok(())
-}
-
-#[test]
 fn replace_timing_baseline() -> anyhow::Result<()> {
-  let template_file = "lvf.lib";
+  let template_file = "pruned_active_lvf.lib";
   let data1_file = "/code/char0425/baseline1/out/btdcell.lib";
   let data2_file = "/code/char0425/baseline2/out/btdcell.lib";
   match (
@@ -447,7 +405,7 @@ fn replace_timing_baseline() -> anyhow::Result<()> {
       data1_lib.cell.insert(
         template_lib
           .cell
-          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
+          .get(&Cell::new_id("DFCNQD1BWP30P140".into()))
           .expect("msg")
           .clone(),
       );
@@ -599,7 +557,7 @@ fn collect() -> anyhow::Result<()> {
       data1_lib.cell.insert(
         template_lib
           .cell
-          .get(&Cell::new_id("DFCNQD1BWP30P140".to_string()))
+          .get(&Cell::new_id("DFCNQD1BWP30P140".into()))
           .expect("msg")
           .clone(),
       );
@@ -634,10 +592,10 @@ fn main() -> anyhow::Result<()> {
   let model_path = "/data/junzhuo/tech/tsmc/22nm/iPDK_CRN22ULL_shrink_T-N22-CR-SP-004-W1_v1.3_1p1a_20211230_all/models/hspice/25/cln22ull_2d5_elk_v1d3_1p1_shrink0d855_embedded_usage.l";
   let hspice_path = "/toolset/eda/synopsys/hspice/2021.09/bin/hspice";
   let btdcell_path = "/data/junzhuo/HOME/SHARE/junzhuo/btdcell/bin/btdcell";
-  let temp_dir = fs::canonicalize(&Path::new("../template"))?;
-  let conf_dir = fs::canonicalize(&Path::new("../config"))?;
-  let cli_dir = fs::canonicalize(&Path::new("../cli"))?;
-  let run_dir = fs::canonicalize(&Path::new("../run"))?;
+  let temp_dir = fs::canonicalize(&Path::new("../template3"))?;
+  let conf_dir = fs::canonicalize(&Path::new("../config3"))?;
+  let cli_dir = fs::canonicalize(&Path::new("../cli3"))?;
+  let run_dir = fs::canonicalize(&Path::new("../run3"))?;
   let cpu_num: usize = 32;
   let mut task_list = Vec::new();
   if let Ok(mut library) =
@@ -652,9 +610,8 @@ fn main() -> anyhow::Result<()> {
       } else {
         Some(liberty_db::expression::BooleanExpression::from_str(when_str)?.into())
       };
-      for cell_name in cell_names {
-        let mut cell =
-          library.cell.take(&Cell::new_id(cell_name.to_string())).expect("msg");
+      for &cell_name in cell_names {
+        let mut cell = library.cell.take(&Cell::new_id(cell_name.into())).expect("msg");
         cell.leakage_power.clear();
         for pin in cell.pin.iter_mut() {
           pin.internal_power.clear();
