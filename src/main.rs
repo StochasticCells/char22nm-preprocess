@@ -190,7 +190,8 @@ const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 11] = [
   ),
 ];
 
-const RUN: [(&str, usize, &str); 1] = [("100kMC", 100000, "McSample")];
+const RUN: [(&str, usize, &str); 1] = [("10k_QMC", 10000, "QmcSample")];
+// const RUN: [(&str, usize, &str); 1] = [("100kMC", 100000, "McSample")];
 // [("golden", 50001, "QmcSample"), ("baseline", 10001, "McSample")];
 
 #[test]
@@ -276,7 +277,7 @@ fn check() -> anyhow::Result<()> {
     let cli2_path = cli2_dir.join(format!("run_{idx}.sh"));
     write!(
       BufWriter::new(File::create(cli2_path)?),
-      "#!/bin/bash\nsource /data/junzhuo/HOME/SHARE/Project/ICCAD24/char0420/license.shrc\ncd {}\n{}\nwait",
+      "#!/bin/bash\nsource /env.d/eda.shrc\ncd {}\n{}\nwait",
       run2_dir.display(),
       paths.join("\n")
     )?;
@@ -592,10 +593,10 @@ fn main() -> anyhow::Result<()> {
   let model_path = "/data/junzhuo/tech/tsmc/22nm/iPDK_CRN22ULL_shrink_T-N22-CR-SP-004-W1_v1.3_1p1a_20211230_all/models/hspice/25/cln22ull_2d5_elk_v1d3_1p1_shrink0d855_embedded_usage.l";
   let hspice_path = "/toolset/eda/synopsys/hspice/2021.09/bin/hspice";
   let btdcell_path = "/data/junzhuo/HOME/SHARE/junzhuo/btdcell/bin/btdcell";
-  let temp_dir = fs::canonicalize(&Path::new("../template3"))?;
-  let conf_dir = fs::canonicalize(&Path::new("../config3"))?;
-  let cli_dir = fs::canonicalize(&Path::new("../cli3"))?;
-  let run_dir = fs::canonicalize(&Path::new("../run3"))?;
+  let temp_dir = fs::canonicalize(&Path::new("../template4"))?;
+  let conf_dir = fs::canonicalize(&Path::new("../config4"))?;
+  let cli_dir = fs::canonicalize(&Path::new("../cli4"))?;
+  let run_dir = fs::canonicalize(&Path::new("../run4"))?;
   let cpu_num: usize = 32;
   let mut task_list = Vec::new();
   if let Ok(mut library) =
@@ -685,7 +686,7 @@ fn main() -> anyhow::Result<()> {
     let cli_path = cli_dir.join(format!("run_{idx}.sh"));
     write!(
       BufWriter::new(File::create(cli_path)?),
-      "#!/bin/bash\nsource /data/junzhuo/HOME/SHARE/Project/ICCAD24/char0420/license.shrc\ncd {}\n{}\nwait",
+      "#!/bin/bash\nsource /env.d/eda.shrc\ncd {}\n{}\nwait",
       run_dir.display(),
       paths.join("\n")
     )?;
