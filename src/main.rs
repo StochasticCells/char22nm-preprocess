@@ -1,7 +1,8 @@
-mod arcs;
+// mod arcs;
 use liberty_db::{
+  ast::GroupSet,
   cell::{self, Cell},
-  ArcStr, GroupSet,
+  DefaultCtx, LibertyStr,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -9,7 +10,6 @@ use std::{
   fs::{self, File},
   io::{BufWriter, Write},
   path::Path,
-  str::FromStr,
 };
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
 struct Config {
@@ -286,7 +286,7 @@ fn check() -> anyhow::Result<()> {
 }
 #[test]
 fn pruned_lib() -> anyhow::Result<()> {
-  let cell_list: HashSet<ArcStr> = vec![
+  let cell_list: HashSet<LibertyStr> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -300,12 +300,12 @@ fn pruned_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ArcStr::from)
+  .map(LibertyStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
-  if let Ok(mut library) =
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(file_name))?)
-  {
+  if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
+    &std::fs::read_to_string(Path::new(file_name))?,
+  ) {
     library.cell.retain(|f| cell_list.contains(&f.name));
     let lib_path = "pruned.lib";
     let mut writer = BufWriter::new(File::create(lib_path)?);
@@ -318,7 +318,7 @@ fn pruned_lib() -> anyhow::Result<()> {
 
 #[test]
 fn pruned_lvf_lib() -> anyhow::Result<()> {
-  let cell_list: HashSet<ArcStr> = vec![
+  let cell_list: HashSet<LibertyStr> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -332,12 +332,12 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ArcStr::from)
+  .map(LibertyStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/LVF/CCS/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c_hm_lvf_p_ccs.lib";
-  if let Ok(mut library) =
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(file_name))?)
-  {
+  if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
+    &std::fs::read_to_string(Path::new(file_name))?,
+  ) {
     library.cell.retain(|f| cell_list.contains(&f.name));
     let lib_path = "pruned_lvf.lib";
     let mut writer = BufWriter::new(File::create(lib_path)?);
@@ -348,7 +348,7 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
 
 #[test]
 fn valid_cells() -> anyhow::Result<()> {
-  let cell_list: HashSet<ArcStr> = vec![
+  let cell_list: HashSet<LibertyStr> = vec![
     "HA1D0BWP30P140",
     "HA1D1BWP30P140",
     "AOI21D0BWP30P140",
@@ -375,12 +375,12 @@ fn valid_cells() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(ArcStr::from)
+  .map(LibertyStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
-  if let Ok(library) =
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(file_name))?)
-  {
+  if let Ok(library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
+    &std::fs::read_to_string(Path::new(file_name))?,
+  ) {
     for cell in library.cell.iter() {
       if !cell_list.contains(&cell.name) {
         println!("{},", cell.name);
@@ -396,27 +396,31 @@ fn replace_timing_baseline() -> anyhow::Result<()> {
   let data1_file = "/code/char0425/baseline1/out/btdcell.lib";
   let data2_file = "/code/char0425/baseline2/out/btdcell.lib";
   match (
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(template_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data1_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data2_file),
+    )?),
   ) {
     (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
-      data1_lib.cell.insert(
-        template_lib
-          .cell
-          .get(&Cell::new_id("DFCNQD1BWP30P140".into()))
-          .expect("msg")
-          .clone(),
-      );
+      data1_lib
+        .cell
+        .insert(template_lib.cell.get("DFCNQD1BWP30P140").expect("msg").clone());
       data1_lib.cell.extend(data2_lib.cell.into_iter());
       for template_cell in template_lib.cell.iter_mut() {
-        let id = template_cell.id();
-        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
+        let data_cell = data1_lib
+          .cell
+          .get_mut(&template_cell.name)
+          .expect(&format!("{:?}", template_cell.name));
         for template_pin in template_cell.pin.iter_mut() {
-          let id = template_pin.id();
-          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
+          let data_pin = data_cell
+            .pin
+            .get_mut(template_pin.name.as_ref())
+            .expect(&format!("{:?}", template_pin.name.as_ref()));
           template_pin.timing = data_pin.timing.clone();
         }
       }
@@ -438,23 +442,23 @@ fn replace_timing_baseline() -> anyhow::Result<()> {
 #[test]
 fn lvf_lib() -> anyhow::Result<()> {
   let file_name = "pruned_lvf.lib";
-  match liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-    file_name,
-  ))?) {
+  match liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+    Path::new(file_name),
+  )?) {
     Ok(library) => {
       let mut _library = library.clone();
       _library.cell.clear();
-      for cell in library.cell.iter() {
+      for cell in library.cell {
         let mut c = cell.clone();
         c.pin.clear();
-        for pin in cell.pin.iter() {
+        for pin in cell.pin {
           let mut p = pin.clone();
           p.timing.clear();
           p.output_ccb.clear();
           p.input_ccb.clear();
           p.receiver_capacitance.clear();
-          for timing in pin.timing.iter() {
-            let mut t = liberty_db::timing::Timing::default();
+          for timing in pin.timing {
+            let mut t = liberty_db::timing::Timing::<DefaultCtx>::default();
             t.related_pin = timing.related_pin.clone();
             t.timing_sense = timing.timing_sense.clone();
             t.timing_type = timing.timing_type.clone();
@@ -477,54 +481,54 @@ fn lvf_lib() -> anyhow::Result<()> {
               t.fall_transition = Some(lut.clone());
               changed = true;
             }
-            if let Some(lut) = &timing.ocv_mean_shift_cell_rise {
-              t.ocv_mean_shift_cell_rise = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_mean_shift_cell_fall {
-              t.ocv_mean_shift_cell_fall = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_mean_shift_rise_transition {
-              t.ocv_mean_shift_rise_transition = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_mean_shift_fall_transition {
-              t.ocv_mean_shift_fall_transition = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_std_dev_cell_rise {
-              t.ocv_std_dev_cell_rise = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_std_dev_cell_fall {
-              t.ocv_std_dev_cell_fall = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_std_dev_rise_transition {
-              t.ocv_std_dev_rise_transition = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_std_dev_fall_transition {
-              t.ocv_std_dev_fall_transition = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_skewness_cell_rise {
-              t.ocv_skewness_cell_rise = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_skewness_cell_fall {
-              t.ocv_skewness_cell_fall = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_skewness_rise_transition {
-              t.ocv_skewness_rise_transition = Some(lut.clone());
-              changed = true;
-            }
-            if let Some(lut) = &timing.ocv_skewness_fall_transition {
-              t.ocv_skewness_fall_transition = Some(lut.clone());
-              changed = true;
-            }
+            // if let Some(lut) = &timing.ocv_mean_shift_cell_rise {
+            //   t.ocv_mean_shift_cell_rise = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_mean_shift_cell_fall {
+            //   t.ocv_mean_shift_cell_fall = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_mean_shift_rise_transition {
+            //   t.ocv_mean_shift_rise_transition = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_mean_shift_fall_transition {
+            //   t.ocv_mean_shift_fall_transition = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_std_dev_cell_rise {
+            //   t.ocv_std_dev_cell_rise = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_std_dev_cell_fall {
+            //   t.ocv_std_dev_cell_fall = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_std_dev_rise_transition {
+            //   t.ocv_std_dev_rise_transition = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_std_dev_fall_transition {
+            //   t.ocv_std_dev_fall_transition = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_skewness_cell_rise {
+            //   t.ocv_skewness_cell_rise = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_skewness_cell_fall {
+            //   t.ocv_skewness_cell_fall = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_skewness_rise_transition {
+            //   t.ocv_skewness_rise_transition = Some(lut.clone());
+            //   changed = true;
+            // }
+            // if let Some(lut) = &timing.ocv_skewness_fall_transition {
+            //   t.ocv_skewness_fall_transition = Some(lut.clone());
+            //   changed = true;
+            // }
             if changed {
               p.timing.insert(t);
             }
@@ -548,27 +552,31 @@ fn collect() -> anyhow::Result<()> {
   let data1_file = "/code/char0425/baseline1/out/btdcell.lib";
   let data2_file = "/code/char0425/baseline2/out/btdcell.lib";
   match (
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(template_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data1_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data2_file),
+    )?),
   ) {
     (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
-      data1_lib.cell.insert(
-        template_lib
-          .cell
-          .get(&Cell::new_id("DFCNQD1BWP30P140".into()))
-          .expect("msg")
-          .clone(),
-      );
+      data1_lib
+        .cell
+        .insert(template_lib.cell.get("DFCNQD1BWP30P140").expect("msg").clone());
       data1_lib.cell.extend(data2_lib.cell.into_iter());
       for template_cell in template_lib.cell.iter_mut() {
-        let id = template_cell.id();
-        let data_cell = data1_lib.cell.get_mut(id).expect(&format!("{:?}", id));
+        let data_cell = data1_lib
+          .cell
+          .get_mut(&template_cell.name)
+          .expect(&format!("{:?}", template_cell.name));
         for template_pin in template_cell.pin.iter_mut() {
-          let id = template_pin.id();
-          let data_pin = data_cell.pin.get_mut(id).expect(&format!("{:?}", id));
+          let data_pin = data_cell
+            .pin
+            .get_mut(template_pin.name.as_ref())
+            .expect(&format!("{:?}", template_pin.name.as_ref()));
           template_pin.timing = data_pin.timing.clone();
         }
       }
@@ -599,27 +607,27 @@ fn main() -> anyhow::Result<()> {
   let run_dir = fs::canonicalize(&Path::new("../run4"))?;
   let cpu_num: usize = 32;
   let mut task_list = Vec::new();
-  if let Ok(mut library) =
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(file_name))?)
-  {
+  if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
+    &std::fs::read_to_string(Path::new(file_name))?,
+  ) {
     let mut _library = library.clone();
     _library.cell.clear();
     for (cell_group, (pin_name, related, when_str, rise), cell_names) in CELL_GROUP {
-      let mut cells: GroupSet<Cell> = GroupSet::new();
-      let when = if when_str == "" {
-        None
-      } else {
-        Some(liberty_db::expression::BooleanExpression::from_str(when_str)?.into())
-      };
+      let mut cells = GroupSet::<Cell<DefaultCtx>>::default();
       for &cell_name in cell_names {
-        let mut cell = library.cell.take(&Cell::new_id(cell_name.into())).expect("msg");
+        let mut cell = library.cell.take(cell_name).expect("msg");
+        let when = if when_str == "" {
+          None
+        } else {
+          Some(cell.parse_logic_booleanexpr(when_str)?)
+        };
         cell.leakage_power.clear();
         for pin in cell.pin.iter_mut() {
           pin.internal_power.clear();
-          if pin.name == pin_name {
+          if pin.name.as_ref() == pin_name.into() {
             pin
               .timing
-              .retain(|t| t.related_pin.inner.contains(related) && t.when == when);
+              .retain(|t| t.related_pin.contains(related) && t.when == when);
             for timing in pin.timing.iter_mut() {
               if rise {
                 timing.cell_fall = None;

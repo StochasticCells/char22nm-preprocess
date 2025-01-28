@@ -1,13 +1,10 @@
 use liberty_db::{
-  ast::GroupAttri,
-  common::items::WordSet,
-  common::table::TableLookUp,
+  common::{items::WordSet, table::TableLookUp},
   timing::{
-    items::TimingSenseType,
-    items::TimingSenseType::{NegativeUnate, PositiveUnate},
+    items::TimingSenseType::{self, NegativeUnate, PositiveUnate},
     Timing, TimingType,
   },
-  Cell, Pin,
+  Cell, DefaultCtx, Pin,
 };
 use ordered_float::NotNan;
 use std::{
@@ -84,28 +81,22 @@ struct Arc {
 
 fn update_cell(
   info: (&str, &str, &str, &str, &str, &str, bool, TimingSenseType),
-  template_lib: &mut liberty_db::Library,
+  template_lib: &mut liberty_db::Library<DefaultCtx>,
 ) -> anyhow::Result<()> {
   let (cell_group, cell, pin, related_pin, arc_num, when, is_rise, timing_sense) = info;
-  let when = if when == "" {
-    None
-  } else {
-    Some(liberty_db::expression::BooleanExpression::from_str(when)?.into())
-  };
-  let timing = template_lib
-    .cell
-    .get_mut(&Cell::new_id(cell.into()))
-    .expect("msg_cell")
+  let cell = template_lib.cell.get_mut(cell).expect("msg_cell");
+  let when = if when == "" { None } else { Some(cell.parse_logic_booleanexpr(when)?) };
+  let timing = cell
     .pin
-    .get_mut(&Pin::new_id(pin.into()))
+    .get_mut(pin.into())
     .expect("msg_pin")
     .timing
-    .get_mut(&Timing::new_id(
-      WordSet { inner: HashSet::from([related_pin.into()]) },
-      Some(timing_sense),
-      TimingType::COMBINATIONAL,
-      when,
-    ))
+    .get_mut(
+      related_pin.into(),
+      Some(&timing_sense),
+      Some(&TimingType::COMBINATIONAL),
+      when.as_ref(),
+    )
     .expect("msg_timing");
 
   let (mut delay_arc, mut transition_arc) = if is_rise {
@@ -242,9 +233,9 @@ fn collect_by_cell() -> anyhow::Result<()> {
     }
   }
   for (cell_name, info_list) in map.iter() {
-    match liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?) {
+    match liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(template_file),
+    )?) {
       Ok(mut template_lib) => {
         for info in info_list {
           update_cell(**info, &mut template_lib)?;
@@ -262,9 +253,9 @@ fn collect_by_cell() -> anyhow::Result<()> {
 #[test]
 fn collect() -> anyhow::Result<()> {
   let template_file = "pruned_100kMC.lib";
-  match liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-    template_file,
-  ))?) {
+  match liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+    Path::new(template_file),
+  )?) {
     Ok(mut template_lib) => {
       for info in INFO {
         update_cell(info, &mut template_lib)?;
@@ -284,11 +275,15 @@ fn replace_timing_5kQMC() -> anyhow::Result<()> {
   let data1_file = "/code/char0425/5kQMC_1/out/btdcell.lib";
   let data2_file = "/code/char0425/5kQMC_2/out/btdcell.lib";
   match (
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(template_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data1_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data2_file),
+    )?),
   ) {
     (Ok(mut temp_lib), Ok(data1_lib), Ok(data2_lib)) => {
       for data_lib in [data1_lib, data2_lib] {
@@ -348,11 +343,15 @@ fn replace_timing_100kMC() -> anyhow::Result<()> {
   let data1_file = "/code/char0425/100kMC_1/out/btdcell.lib";
   let data2_file = "/code/char0425/100kMC_2/out/btdcell.lib";
   match (
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(
-      template_file,
-    ))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data1_file))?),
-    liberty_db::library::Library::parse(&std::fs::read_to_string(Path::new(data2_file))?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(template_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data1_file),
+    )?),
+    liberty_db::library::Library::<DefaultCtx>::parse_lib(&std::fs::read_to_string(
+      Path::new(data2_file),
+    )?),
   ) {
     (Ok(mut temp_lib), Ok(data1_lib), Ok(data2_lib)) => {
       for data_lib in [data1_lib, data2_lib] {
