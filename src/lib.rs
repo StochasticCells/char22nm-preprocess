@@ -2,7 +2,7 @@
 use liberty_db::{
   ast::GroupSet,
   cell::{self, Cell},
-  DefaultCtx, LibertyStr,
+  DefaultCtx,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -11,20 +11,21 @@ use std::{
   io::{BufWriter, Write},
   path::Path,
 };
+#[expect(non_snake_case)]
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
-struct Config {
-  Name: String,
-  Voltage: f32,
-  Temperature: f32,
-  LibFilePath: String,
-  NetListPath: String,
-  ModelPath: String,
-  ModelSection: String,
-  LvfType: String,
-  LVFSamplingNum: usize,
-  NumCPU: usize,
-  HspicePath: String,
-  CellNameList: Vec<String>,
+pub struct Config {
+  pub Name: String,
+  pub Voltage: f32,
+  pub Temperature: f32,
+  pub LibFilePath: String,
+  pub NetListPath: String,
+  pub ModelPath: String,
+  pub ModelSection: String,
+  pub LvfType: String,
+  pub LVFSamplingNum: usize,
+  pub NumCPU: usize,
+  pub HspicePath: String,
+  pub CellNameList: Vec<String>,
 }
 impl Config {
   fn push_cell(&mut self, cell: String) {
@@ -32,26 +33,26 @@ impl Config {
   }
 }
 
-const PVT: [(&str, &str, f32, f32); 1] = [
-  // ("ffg0p88v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 0.0),
-  // ("ffg0p88v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 125.0),
-  // ("ffg0p88vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, -40.0),
-  // ("ffg0p99v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 0.0),
-  // ("ffg0p99v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 125.0),
-  // ("ffg0p99vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, -40.0),
-  // ("ssg0p72v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 0.0),
-  // ("ssg0p72v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 125.0),
-  // ("ssg0p72vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, -40.0),
-  // ("ssg0p81v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 0.0),
-  // ("ssg0p81v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 125.0),
-  // ("ssg0p81vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, -40.0),
+pub const PVT: &[(&str, &str, f32, f32)] = &[
+  ("ffg0p88v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 0.0),
+  ("ffg0p88v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, 125.0),
+  ("ffg0p88vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.88, -40.0),
+  ("ffg0p99v0c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 0.0),
+  ("ffg0p99v125c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, 125.0),
+  ("ffg0p99vm40c", "FFGlobalCorner_LocalMC_MOS_MOSCAP", 0.99, -40.0),
+  ("ssg0p72v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 0.0),
+  ("ssg0p72v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, 125.0),
+  ("ssg0p72vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.72, -40.0),
+  ("ssg0p81v0c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 0.0),
+  ("ssg0p81v125c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, 125.0),
+  ("ssg0p81vm40c", "SSGlobalCorner_LocalMC_MOS_MOSCAP", 0.81, -40.0),
   ("tt0p8v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 25.0),
-  // ("tt0p8v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 85.0),
-  // ("tt0p9v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 25.0),
-  // ("tt0p9v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 85.0),
+  ("tt0p8v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.8, 85.0),
+  ("tt0p9v25c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 25.0),
+  ("tt0p9v85c", "TTGlobalCorner_LocalMC_MOS_MOSCAP", 0.9, 85.0),
 ];
 
-const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 11] = [
+pub const CELL_GROUP: &[(&str, (&str, &str, &str, bool), &[&str])] = &[
   (
     "INV",
     ("ZN", "I", "", true),
@@ -180,7 +181,7 @@ const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 11] = [
   ),
   (
     "FA1",
-    ("CO", "A", "B&!C", true),
+    ("CO", "A", "B&!CI", true),
     &["FA1D0BWP30P140", "FA1D1BWP30P140", "FA1D2BWP30P140", "FA1D4BWP30P140"],
   ),
   (
@@ -190,7 +191,7 @@ const CELL_GROUP: [(&str, (&str, &str, &str, bool), &[&str]); 11] = [
   ),
 ];
 
-const RUN: [(&str, usize, &str); 1] = [("10k_QMC", 10000, "QmcSample")];
+pub const RUN: [(&str, usize, &str); 1] = [("10k_QMC", 10000, "QmcSample")];
 // const RUN: [(&str, usize, &str); 1] = [("100kMC", 100000, "McSample")];
 // [("golden", 50001, "QmcSample"), ("baseline", 10001, "McSample")];
 
@@ -209,7 +210,7 @@ fn check() -> anyhow::Result<()> {
   let mut config_map: HashMap<(&'static str, &'static str, &'static str), Config> =
     HashMap::new();
   for (cell_group, _, cell_names) in CELL_GROUP {
-    for cell_name in cell_names {
+    for cell_name in cell_names.iter() {
       for (run_name, sample_num, sample_type) in RUN {
         'L1: for (pvt_name, p, v, t) in PVT {
           if let Ok(files) = run_dir
@@ -236,8 +237,8 @@ fn check() -> anyhow::Result<()> {
               (cell_group, run_name, pvt_name),
               Config {
                 Name: format!("{cell_group}_{run_name}_{pvt_name}"),
-                Voltage: v,
-                Temperature: t,
+                Voltage: *v,
+                Temperature: *t,
                 LibFilePath: format!(
                   "{}",
                   temp_dir.join(format!("{cell_group}.lib")).display()
@@ -286,7 +287,7 @@ fn check() -> anyhow::Result<()> {
 }
 #[test]
 fn pruned_lib() -> anyhow::Result<()> {
-  let cell_list: HashSet<LibertyStr> = vec![
+  let cell_list: HashSet<String> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -300,7 +301,7 @@ fn pruned_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(LibertyStr::from)
+  .map(String::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
   if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
@@ -318,7 +319,7 @@ fn pruned_lib() -> anyhow::Result<()> {
 
 #[test]
 fn pruned_lvf_lib() -> anyhow::Result<()> {
-  let cell_list: HashSet<LibertyStr> = vec![
+  let cell_list: HashSet<String> = vec![
     "HA1D1BWP30P140",
     "AOI21D1BWP30P140",
     "XNR2D1BWP30P140",
@@ -332,7 +333,7 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(LibertyStr::from)
+  .map(String::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/LVF/CCS/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c_hm_lvf_p_ccs.lib";
   if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
@@ -348,7 +349,7 @@ fn pruned_lvf_lib() -> anyhow::Result<()> {
 
 #[test]
 fn valid_cells() -> anyhow::Result<()> {
-  let cell_list: HashSet<LibertyStr> = vec![
+  let cell_list: HashSet<&str> = [
     "HA1D0BWP30P140",
     "HA1D1BWP30P140",
     "AOI21D0BWP30P140",
@@ -375,14 +376,13 @@ fn valid_cells() -> anyhow::Result<()> {
     "DFCNQD1BWP30P140",
   ]
   .into_iter()
-  .map(LibertyStr::from)
   .collect();
   let file_name = "/data/junzhuo/tech/tsmc/22nm/tcbn22ullbwp30p140_110b/AN61001_20201222/TSMCHOME/digital/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140_110b/tcbn22ullbwp30p140tt0p8v25c.lib";
   if let Ok(library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
     &std::fs::read_to_string(Path::new(file_name))?,
   ) {
     for cell in library.cell.iter() {
-      if !cell_list.contains(&cell.name) {
+      if !cell_list.contains(cell.name.as_str()) {
         println!("{},", cell.name);
       }
     }
@@ -406,7 +406,7 @@ fn replace_timing_baseline() -> anyhow::Result<()> {
       Path::new(data2_file),
     )?),
   ) {
-    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
+    (Ok(mut template_lib), Ok(mut data1_lib), Ok(data2_lib)) => {
       data1_lib
         .cell
         .insert(template_lib.cell.get("DFCNQD1BWP30P140").expect("msg").clone());
@@ -428,13 +428,7 @@ fn replace_timing_baseline() -> anyhow::Result<()> {
       let mut writer = BufWriter::new(File::create(lib_path)?);
       write!(&mut writer, "{}", template_lib)?;
     }
-    (Ok(_), Ok(_), Err(_)) => todo!(),
-    (Ok(_), Err(_), Ok(_)) => todo!(),
-    (Ok(_), Err(_), Err(_)) => todo!(),
-    (Err(_), Ok(_), Ok(_)) => todo!(),
-    (Err(_), Ok(_), Err(_)) => todo!(),
-    (Err(_), Err(_), Ok(_)) => todo!(),
-    (Err(_), Err(_), Err(_)) => todo!(),
+    _ => todo!(),
   }
   Ok(())
 }
@@ -481,54 +475,6 @@ fn lvf_lib() -> anyhow::Result<()> {
               t.fall_transition = Some(lut.clone());
               changed = true;
             }
-            // if let Some(lut) = &timing.ocv_mean_shift_cell_rise {
-            //   t.ocv_mean_shift_cell_rise = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_mean_shift_cell_fall {
-            //   t.ocv_mean_shift_cell_fall = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_mean_shift_rise_transition {
-            //   t.ocv_mean_shift_rise_transition = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_mean_shift_fall_transition {
-            //   t.ocv_mean_shift_fall_transition = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_std_dev_cell_rise {
-            //   t.ocv_std_dev_cell_rise = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_std_dev_cell_fall {
-            //   t.ocv_std_dev_cell_fall = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_std_dev_rise_transition {
-            //   t.ocv_std_dev_rise_transition = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_std_dev_fall_transition {
-            //   t.ocv_std_dev_fall_transition = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_skewness_cell_rise {
-            //   t.ocv_skewness_cell_rise = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_skewness_cell_fall {
-            //   t.ocv_skewness_cell_fall = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_skewness_rise_transition {
-            //   t.ocv_skewness_rise_transition = Some(lut.clone());
-            //   changed = true;
-            // }
-            // if let Some(lut) = &timing.ocv_skewness_fall_transition {
-            //   t.ocv_skewness_fall_transition = Some(lut.clone());
-            //   changed = true;
-            // }
             if changed {
               p.timing.insert(t);
             }
@@ -562,7 +508,7 @@ fn collect() -> anyhow::Result<()> {
       Path::new(data2_file),
     )?),
   ) {
-    (Ok(mut template_lib), Ok(mut data1_lib), Ok(mut data2_lib)) => {
+    (Ok(mut template_lib), Ok(mut data1_lib), Ok(data2_lib)) => {
       data1_lib
         .cell
         .insert(template_lib.cell.get("DFCNQD1BWP30P140").expect("msg").clone());
@@ -584,13 +530,7 @@ fn collect() -> anyhow::Result<()> {
       let mut writer = BufWriter::new(File::create(lib_path)?);
       write!(&mut writer, "{}", template_lib)?;
     }
-    (Ok(_), Ok(_), Err(_)) => todo!(),
-    (Ok(_), Err(_), Ok(_)) => todo!(),
-    (Ok(_), Err(_), Err(_)) => todo!(),
-    (Err(_), Ok(_), Ok(_)) => todo!(),
-    (Err(_), Ok(_), Err(_)) => todo!(),
-    (Err(_), Err(_), Ok(_)) => todo!(),
-    (Err(_), Err(_), Err(_)) => todo!(),
+    _ => unreachable!(),
   }
   Ok(())
 }
@@ -601,10 +541,10 @@ fn main() -> anyhow::Result<()> {
   let model_path = "/data/junzhuo/tech/tsmc/22nm/iPDK_CRN22ULL_shrink_T-N22-CR-SP-004-W1_v1.3_1p1a_20211230_all/models/hspice/25/cln22ull_2d5_elk_v1d3_1p1_shrink0d855_embedded_usage.l";
   let hspice_path = "/toolset/eda/synopsys/hspice/2021.09/bin/hspice";
   let btdcell_path = "/data/junzhuo/HOME/SHARE/junzhuo/btdcell/bin/btdcell";
-  let temp_dir = fs::canonicalize(&Path::new("../template4"))?;
-  let conf_dir = fs::canonicalize(&Path::new("../config4"))?;
-  let cli_dir = fs::canonicalize(&Path::new("../cli4"))?;
-  let run_dir = fs::canonicalize(&Path::new("../run4"))?;
+  let temp_dir = fs::canonicalize(&Path::new("../template"))?;
+  let conf_dir = fs::canonicalize(&Path::new("../config"))?;
+  let cli_dir = fs::canonicalize(&Path::new("../cli"))?;
+  let run_dir = fs::canonicalize(&Path::new("../run"))?;
   let cpu_num: usize = 32;
   let mut task_list = Vec::new();
   if let Ok(mut library) = liberty_db::library::Library::<DefaultCtx>::parse_lib(
@@ -614,22 +554,22 @@ fn main() -> anyhow::Result<()> {
     _library.cell.clear();
     for (cell_group, (pin_name, related, when_str, rise), cell_names) in CELL_GROUP {
       let mut cells = GroupSet::<Cell<DefaultCtx>>::default();
-      for &cell_name in cell_names {
+      for &cell_name in cell_names.iter() {
         let mut cell = library.cell.take(cell_name).expect("msg");
-        let when = if when_str == "" {
+        let when = if *when_str == "" {
           None
         } else {
-          Some(cell.parse_logic_booleanexpr(when_str)?)
+          Some(cell.parse_logic_boolexpr(when_str)?)
         };
         cell.leakage_power.clear();
         for pin in cell.pin.iter_mut() {
           pin.internal_power.clear();
-          if pin.name.as_ref() == pin_name.into() {
+          if pin.name.as_ref() == (*pin_name).into() {
             pin
               .timing
               .retain(|t| t.related_pin.contains(related) && t.when == when);
             for timing in pin.timing.iter_mut() {
-              if rise {
+              if *rise {
                 timing.cell_fall = None;
                 timing.fall_transition = None;
                 timing.rise_constraint = None;
@@ -660,8 +600,8 @@ fn main() -> anyhow::Result<()> {
             BufWriter::new(File::create(yaml_path.clone())?),
             &Config {
               Name: name,
-              Voltage: v,
-              Temperature: t,
+              Voltage: *v,
+              Temperature: *t,
               LibFilePath: format!("{}", lib_path.display()),
               NetListPath: netlist_path.to_string(),
               ModelPath: model_path.to_string(),

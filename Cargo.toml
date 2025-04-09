@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0"
 itertools = "0.12.1"
-liberty-db = { path="/home/HeLab/junzhuo/project/liberty/liberty-db"}
+# liberty-db = { path="/home/HeLab/junzhuo/project/liberty/liberty-db"}
+liberty-db = "0.10"
 ordered-float = "4.2.0"
-# liberty-db = "0.4.6"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
+serde_json = "1.0"
